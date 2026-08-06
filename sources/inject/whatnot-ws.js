@@ -1,6 +1,4 @@
-
-
-(() => {
+function runWS() {
   /**
   * @typedef {{ type: typeof WSEventType.RECEIVE | typeof WSEventType.SEND, data: string }} WSEventPayload
   */
@@ -68,6 +66,7 @@
 
     let tUrl = typeof url === "string" ? url : url.href;
     if (tUrl.startsWith("wss://www.whatnot.com/")) {
+      console.log("Intercepted Whatnot WebSocket connection to:", tUrl);
       /**
        * @type {typeof WebSocket.prototype.send}
        * @this {WebSocket}
@@ -84,7 +83,7 @@
        * @param {MessageEvent} event 
        */
       function onMessage(event) {
-        console.log("Received message:", event.data);
+        //console.log("Received message:", event.data);
         safely(() => postMessage({
           type: WSEventType.RECEIVE,
           data: normalizeToString(event.data)
@@ -105,16 +104,15 @@
 
     return ws;
   };
-
-  window.WebSocket.prototype = OriginalWS.prototype;
-
-  for (const prop in OriginalWS) {
-    window.WebSocket[prop] = OriginalWS[prop];
+  const descriptors = Object.getOwnPropertyDescriptors(OriginalWS)
+  for (const key in descriptors) {
+    Object.defineProperty(window.WebSocket, key, descriptors[key]);
   }
-  window.WebSocket.CONNECTING = OriginalWS.CONNECTING;
-  window.WebSocket.OPEN = OriginalWS.OPEN;
-  window.WebSocket.CLOSING = OriginalWS.CLOSING;
-  window.WebSocket.CLOSED = OriginalWS.CLOSED;
 
   console.log("WebSocket interception script loaded");
+}
+
+(() => {
+  if (typeof usingElectron !== "undefined" && usingElectron) return;
+  runWS();
 })();
