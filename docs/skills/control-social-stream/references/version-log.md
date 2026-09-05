@@ -4,6 +4,7 @@ Always call `ssapp_get_capabilities` or `GET /api/v1/capabilities`. Its command 
 
 | Control API | Minimum SSApp | Available surface |
 | --- | --- | --- |
+| 1.3.1 / MCP 1.2.2 | 0.4.24 | Bounds semantic page inspection so unresponsive subframes cannot consume the command timeout; main-page failures return SOURCE_PAGE_UNAVAILABLE; tool schemas unchanged |
 | 1.3.1 / MCP 1.2.2 | 0.4.23 | Returns SSAPP_UNREACHABLE for interrupted HTTP response bodies and drains queued stdout before exiting after client stdin closes; tool schemas and commands are unchanged |
 | 1.3.1 / MCP 1.2.1 | 0.4.22 | Removes the inactive global YouTube sync settings from capabilities and getSettings; updateSettings rejects youtubeAutoAdd, youtubeAutoCleanup, and youtubeCheckInterval. Group Auto-activate remains the supported discovery path. |
 | 1.3.1 / MCP 1.2.1 | 0.4.14 | Adds opt-in reverse document-order semantic inspection so late-mounted modal controls remain reachable when a page exceeds the bounded element limit |
@@ -22,6 +23,8 @@ Always call `ssapp_get_capabilities` or `GET /api/v1/capabilities`. Its command 
 ## Skill revisions
 
 ### 2026-09-05
+
+- Documented bounded frame inspection and main-page retry behavior (minimum SSApp 0.4.24), plus platform-dependent diagnostic memory availability.
 
 - Documented interrupted-response recovery and complete output draining in MCP 1.2.2
   (minimum SSApp 0.4.23). After a transport failure, inspect state before retrying mutations;
