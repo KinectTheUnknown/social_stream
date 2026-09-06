@@ -7971,7 +7971,7 @@ async function sendToDestinations(message, individualLikeAlreadyRouted) {
 				return badge && typeof badge === "object" && badge.source === "pluralmind";
 			});
 			if (!hasPluralmindPronouns) {
-				let pronoun = await getPronounsNames(message.chatname);
+				let pronoun = await getPronounsNames(message.username || message.chatname);
 				if (!Pronouns && pronoun) {
 					await getPronouns();
 				}
@@ -8181,6 +8181,10 @@ async function sendToDestinations(message, individualLikeAlreadyRouted) {
 	sendToStreamerBot(message);
 	if (message.chatmessage || message.hasDonation || message.chatname) {
 		message.idx = await addMessageDB(message);
+	}
+	if (window.processStickerReward && /^!stickers?(?:\s|$)/i.test(message.chatmessage || '')) {
+		// Opt-in reward failures must never interrupt normal chat delivery.
+		window.processStickerReward(message).catch(function (error) { console.warn('Sticker reward failed:', error); });
 	}
 	return true;
 }
@@ -8427,7 +8431,7 @@ function sendToH2R(data) {
 			msg.authorDetails = {};
 			msg.authorDetails.displayName = data.chatname || "";
 			if (data.type && data.type == "twitch" && !data.chatimg && data.chatname) {
-				msg.authorDetails.profileImageUrl = "https://api.socialstream.ninja/twitch/large?username=" + encodeURIComponent(data.chatname); // 150x150
+				msg.authorDetails.profileImageUrl = "https://api.socialstream.ninja/twitch/large?username=" + encodeURIComponent(data.username || data.chatname); // 150x150
 			} else if (data.type && (data.type == "youtube" || data.type == "youtubeshorts") && data.chatimg) {
 				let chatimg = data.chatimg.replace("=s32-", "=s256-");
 				msg.authorDetails.profileImageUrl = chatimg.replace("=s64-", "=s256-");
@@ -8710,19 +8714,7 @@ function normalizeMessageForTracking(msg, textonly = false) {
 	const imageEndMarker = "\uE001";
 	const unknownImageMarker = "\uE002";
 
-	if (textonly) {
-		if (/<img\b/i.test(normalized)) {
-			try {
-				const doc = new DOMParser().parseFromString(normalized, "text/html");
-				doc.querySelectorAll("img").forEach(img => {
-					const replacement = (img.getAttribute("alt") || img.getAttribute("title") || unknownImageMarker).trim();
-					img.parentNode.replaceChild(doc.createTextNode(imageStartMarker + replacement + imageEndMarker), img);
-				});
-				normalized = doc.body.innerHTML || "";
-			} catch (e) {}
-		}
-		normalized = normalized.replace(/<\/?[^>]+(>|$)/g, "");
-	} else {
+	if (!textonly) {
 		try {
 			const doc = new DOMParser().parseFromString(normalized, "text/html");
 			doc.querySelectorAll("img").forEach(img => {
@@ -10088,7 +10080,7 @@ function sendToPost(data) {
 			}
 
 			if (data.type && !data.chatimg && data.type == "twitch" && data.chatname) {
-				data.chatimg = "https://api.socialstream.ninja/twitch/large?username=" + encodeURIComponent(data.chatname); // 150x150
+				data.chatimg = "https://api.socialstream.ninja/twitch/large?username=" + encodeURIComponent(data.username || data.chatname); // 150x150
 			} else if (data.type && (data.type == "youtube" || data.type == "youtubeshorts") && data.chatimg) {
 				let chatimg = data.chatimg.replace("=s32-", "=s256-");
 				data.chatimg = chatimg.replace("=s64-", "=s256-");
@@ -12959,6 +12951,13 @@ function sendDataP2P(data, UUID = false) {
 				trackSdkSendResult(ninjaBridge.sendToLabel(data, "tipjar"));
 			} else if (!streamDeckPeerSent) {
 				trackSdkSendResult(ninjaBridge.send(data)); // broadcast
+			} else {
+				// Stream Deck already received its copy; preserve the fallback feed for other peers.
+				for (var peerId in peers) {
+					if (peers[peerId] !== "streamdeck") {
+						trackSdkSendResult(ninjaBridge.send(data, peerId));
+					}
+				}
 			}
 			return;
 		} catch (e) {
@@ -13018,12 +13017,13 @@ function processHype(data) {
 
 	// If it's not a viewer_update, proceed to process as a chatter
 	const sourceType = data.type;
+	const userKey = data.userid || data.username || data.chatname;
 
 	let newSource = false;
 
 	if (users[sourceType] && data.chatname) {
 		// Site exists
-		if (!users[sourceType][data.chatname]) {
+		if (!users[sourceType][userKey]) {
 			// New user for this site
 			if (hype[sourceType]) {
 				hype[sourceType] += 1;
@@ -13032,11 +13032,11 @@ function processHype(data) {
 				newSource = true;
 			}
 		}
-		users[sourceType][data.chatname] = Date.now() + 60000 * 5;
+		users[sourceType][userKey] = Date.now() + 60000 * 5;
 	} else if (data.chatname) {
 		// New site
 		var site = {};
-		site[data.chatname] = Date.now() + 60000 * 5;
+		site[userKey] = Date.now() + 60000 * 5;
 		users[sourceType] = site;
 		hype[sourceType] = 1;
 		newSource = true;
@@ -14059,7 +14059,7 @@ function forgetWaitlistUser(entry) {
 		if (!entry || !entry.type || !entry.chatname || !waitListUsers[entry.type]) {
 			return;
 		}
-		delete waitListUsers[entry.type][entry.chatname];
+		delete waitListUsers[entry.type][entry.userid || entry.username || entry.chatname];
 		if (!Object.keys(waitListUsers[entry.type]).length) {
 			delete waitListUsers[entry.type];
 		}
@@ -14085,16 +14085,17 @@ function processWaitlist(data) {
 		data.waitlistTrigger = trigger;
 		data.waitlistJoinMessage = extractWaitlistMessage(data.chatmessage, trigger);
 
+		var userKey = data.userid || data.username || data.chatname;
 		var update = false;
 		if (waitListUsers[data.type]) {
-			if (!waitListUsers[data.type][data.chatname]) {
+			if (!waitListUsers[data.type][userKey]) {
 				update = true;
-				waitListUsers[data.type][data.chatname] = Date.now();
+				waitListUsers[data.type][userKey] = Date.now();
 				waitlist.push(data);
 			}
 		} else {
 			var site = {};
-			site[data.chatname] = Date.now();
+			site[userKey] = Date.now();
 			waitListUsers[data.type] = site;
 			waitlist.push(data);
 			update = true;
@@ -14568,7 +14569,7 @@ function sendToDisk(data) {
 				}
 
 				if (data.type && data.type == "twitch" && !data.chatimg && data.chatname) {
-					data.chatimg = "https://api.socialstream.ninja/twitch/large?username=" + encodeURIComponent(data.chatname); // 150x150
+					data.chatimg = "https://api.socialstream.ninja/twitch/large?username=" + encodeURIComponent(data.username || data.chatname); // 150x150
 				}
 
 				overwriteFile(JSON.stringify(data));
@@ -14586,7 +14587,7 @@ function sendToDisk(data) {
 				}
 
 				if (data.type && data.type == "twitch" && !data.chatimg && data.chatname) {
-					data.chatimg = "https://api.socialstream.ninja/twitch/large?username=" + encodeURIComponent(data.chatname); // 150x150
+					data.chatimg = "https://api.socialstream.ninja/twitch/large?username=" + encodeURIComponent(data.username || data.chatname); // 150x150
 				}
 				overwriteFileExcel(data);
 			}
@@ -15112,6 +15113,10 @@ async function processEventFlowBridgeEvent(value) {
 
 async function processIncomingRequest(request, UUID = false) {
 	// from the dock or chat bot, etc.
+	if (request && request.action === "stickerReceipt") {
+		if (window.receiveStickerReceipt) window.receiveStickerReceipt(request, UUID);
+		return;
+	}
 	if (request && request.type === "ssnPeerHello" && request.label && UUID) {
 		var announcedLabel = String(request.label).trim().slice(0, 100);
 		if (announcedLabel) {
@@ -15217,7 +15222,7 @@ async function processIncomingRequest(request, UUID = false) {
 			});
 		} else if (request.action === "getUserHistory" && request.value && request.value.chatname && request.value.type) {
 			if (isExtensionOn) {
-				getMessagesDB(request.value.userid || request.value.username || request.value.chatname, request.value.type, (page = 0), (pageSize = 100), function (response) {
+				getMessagesDB(request.value.userid || request.value.chatname, request.value.type, (page = 0), (pageSize = 100), function (response) {
 					if (isExtensionOn) {
 						sendDataP2P({ userHistory: response }, UUID);
 					}

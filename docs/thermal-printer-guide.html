@@ -115,11 +115,19 @@
 					<li>Open <strong>Test Flow</strong>, enter a name, enable <strong>Has Donation</strong>, enter an amount, and run the test. This sends a real print job in the standalone app.</li>
 				</ol>
 				<p>Other useful placeholders include <code>{message}</code>, <code>{source}</code>, <code>{donationAmount}</code>, and <code>{counterValue}</code>. Values created by earlier nodes can also be used in the print template.</p>
+				<h3>Bold the buyer, keep the item normal</h3>
+				<p>Choose <strong>Weight → Selected text (**bold**)</strong>, then enter:</p>
+				<pre><code>**{username}**
+{itemName}</code></pre>
+				<p>Use single braces. If your earlier node creates <code>buyer</code>, use <code>**{buyer}**</code> instead. The purchase source or an earlier node must supply <code>itemName</code>. Only text wrapped in <code>**</code> becomes bold; no custom JavaScript or HTML is needed. Existing All bold and Normal labels keep their formatting.</p>
 				<div class="guide-note"><p>For purchase events, use the matching event trigger and print the fields supplied by that integration. Add a Counter before the print action when you want one running order number for the stream.</p></div>
+				<p>A Counter numbers purchases, not unique buyers. Reusing one ID for every purchase by the same buyer needs a separate buyer-to-ID mapping and an explicit reset at the start of each stream. User Memory's reason field is descriptive text, not a dedicated buyer-ID counter.</p>
 			</div>
 
 			<div class="guide-card">
 				<h2>Fixed-Length Labels Without Surprises</h2>
+				<p><strong>3 × 1-inch labels (including a Munbyn BT320 setup):</strong> use 76.2 mm width and 25.4 mm fixed length when the 1-inch side is the feed direction. Match that stock and orientation in Windows Printing Preferences. Start with 12–14 pt text and test a long buyer and item name.</p>
+				<p>The alignment test's side borders mark the safe width after the selected printable-area setting and safe margins. The box height follows the test text; it does not outline the full label or touch the physical paper edges.</p>
 				<ul class="guide-list">
 					<li><strong>Measure in the feed direction.</strong> A 62 × 29 mm label normally uses a 62 mm paper width and 29 mm fixed label length.</li>
 					<li><strong>Match Windows too.</strong> Select the exact label stock, orientation, gap/mark sensing, and cutter behavior in the printer driver's Printing Preferences.</li>

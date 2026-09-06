@@ -2164,6 +2164,16 @@ TTS.desktopSystemTTS = async function(text, options) {
         };
         if (premiumSerial !== TTS.premiumSerial) return;
         const wavBuffer = response?.wavBuffer || response;
+        if (TTS.neuroSyncEnabled) {
+            try {
+                await TTS.sendToNeuroSync(new Blob([wavBuffer], { type: "audio/wav" }));
+            } catch (error) {
+                console.error("NeuroSync error:", error);
+            } finally {
+                if (premiumSerial === TTS.premiumSerial) TTS.finishedAudio();
+            }
+            return;
+        }
         await TTS.playAudioBlob(new Blob([wavBuffer], { type: "audio/wav" }));
         TTS.updateButtonState("speaking");
     } catch (error) {

@@ -27,6 +27,7 @@ tests/
 !tests/
 tests/*
 !tests/review-critical-regressions.test.cjs
+!tests/pr898-regressions.test.cjs
 !tests/mobile-remote-control-contract.test.js
 !tests/vdo-password-test-vectors.test.js
 !tests/blaze-source.test.js
@@ -118,3 +119,5 @@ firefox-build/
 /%SystemDrive%/ProgramData/Microsoft/Windows/Caches/
 
 !scripts/electron-overlay-contentimg-e2e.cjs
+!tests/sticker-rewards.test.cjs
+!tests/thermal-label-formatting.test.cjs

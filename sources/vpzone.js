@@ -165,7 +165,8 @@
 
 	function renderWsMessage(text, emoteMap) {
 		text = String(text == null ? "" : text);
-		if (settings.textonlymode || !emoteMap || typeof emoteMap !== "object") {
+		if (settings.textonlymode) return text;
+		if (!emoteMap || typeof emoteMap !== "object") {
 			return escapeHtmlMaybe(text).replace(/\n/g, "<br>");
 		}
 		return text.split(/(\s+)/).map(function (token) {
@@ -435,11 +436,7 @@
 				chrome.runtime.sendMessage(chrome.runtime.id, { "message": data }, function () {});
 			} catch (e) {}
 		}
-		var branding = refreshSourceBranding();
-		if (sourceBrandPending) {
-			branding.then(send);
-			return;
-		}
+		refreshSourceBranding();
 		send();
 	}
 

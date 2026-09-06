@@ -1334,6 +1334,7 @@
     "and-more-peer-count": "و{count} المزيد"
   },
   "titles": {
+    "show-content-images-and-videos-up-to-240px-including-twitch-gifs-and-stickers-does-not-resize-regular-emotes": "عرض صور المحتوى ومقاطع الفيديو بحجم يصل إلى 240 بكسل، بما في ذلك صور GIF وملصقات Twitch (لا يغيّر حجم الرموز التعبيرية العادية)",
     "show-username-colors-supplied-by-the-source-sources-such-as-youtube-may-not-supply-one": "Show username colors supplied by the source. Sources such as YouTube may not supply one.",
     "keep-source-provided-username-colors-and-generate-a-consistent-color-when-one-is-missing": "Keep source-provided username colors and generate a consistent color when one is missing.",
     "generate-a-consistent-username-color-in-this-dock-replacing-colors-supplied-by-the-source": "Generate a consistent username color in this Dock, replacing colors supplied by the source.",
@@ -1827,6 +1828,12 @@
     "how-fast-the-credits-roll-upward-in-pixels-per-second-default-80": "مدى سرعة تدحرج الاعتمادات لأعلى، بالبكسل في الثانية (الافتراضي 80)"
   },
   "placeholders": {
+    "count-ranked-viewers": "{count} مشاهدين في الترتيب",
+    "eg-activity": "مثال: النشاط",
+    "streak": "سلسلة",
+    "points": "نقاط",
+    "waiting-for-points": "في انتظار النقاط",
+    "enable-points-system-then-wait-for-chat-activity-or-manage-points-from-the-popup": "فعّل نظام النقاط، ثم انتظر نشاط الدردشة أو أدر النقاط من النافذة المنبثقة.",
     "auto-for-example-super-chats": "Auto (for example, Super Chats)",
     "intro-main-brb": "مقدمة، رئيسي، استراحة",
     "0": "0",

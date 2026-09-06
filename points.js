@@ -324,6 +324,16 @@ class PointsSystem {
         });
     }
 
+    async refundPoints(username, type = 'default', amount) {
+        if (!Number.isFinite(amount) || amount <= 0) throw new Error('Invalid refund amount');
+        return this.withUserLock(this.getUserKey(username, type), async () => {
+            const userData = Object.assign({}, await this.getUserPoints(username, type));
+            userData.pointsSpent = Math.max(0, userData.pointsSpent - amount);
+            await this.saveUserPoints(userData);
+            return { success: true, remaining: userData.points - userData.pointsSpent };
+        });
+    }
+
     async getLeaderboard(limit = 10, type = null) {
         const db = await this.ensureDB();
         

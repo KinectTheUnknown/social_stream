@@ -4998,7 +4998,7 @@ class EventFlowEditor {
 					<div class="property-group">
 						<label class="property-label">Label text</label>
 						<textarea class="property-input" id="prop-text" rows="4" placeholder="{username}\n{donation}">${this.escapeHtml(node.config.text ?? '{username}\n{donation}')}</textarea>
-						<div class="property-help">Use placeholders such as {username}, {donation}, {donationAmount}, {message}, {source}, and values created by earlier nodes. New lines print as separate lines.</div>
+						<div class="property-help">Use single braces: {username}, {message}, or fields from earlier nodes. New lines print on new lines.</div>
 					</div>
 					<div class="property-group">
 						<label class="property-label">Text appearance</label>
@@ -5006,10 +5006,11 @@ class EventFlowEditor {
 							<label>Size (pt)<input type="number" class="property-input" id="prop-fontSize" value="${node.config.fontSize ?? 18}" min="6" max="96" step="1"></label>
 							<label>Line spacing<input type="number" class="property-input" id="prop-lineHeight" value="${node.config.lineHeight ?? 1.15}" min="0.8" max="3" step="0.05"></label>
 							<label>Font<input type="text" class="property-input" id="prop-fontFamily" value="${this.escapeHtml(node.config.fontFamily || 'monospace')}"></label>
-							<label>Weight<select class="property-input" id="prop-fontWeight"><option value="bold" ${node.config.fontWeight !== 'normal' ? 'selected' : ''}>Bold</option><option value="normal" ${node.config.fontWeight === 'normal' ? 'selected' : ''}>Normal</option></select></label>
+							<label>Weight<select class="property-input" id="prop-fontWeight"><option value="bold" ${!['normal', 'selected'].includes(node.config.fontWeight) ? 'selected' : ''}>All bold</option><option value="normal" ${node.config.fontWeight === 'normal' ? 'selected' : ''}>Normal</option><option value="selected" ${node.config.fontWeight === 'selected' ? 'selected' : ''}>Selected text (**bold**)</option></select></label>
 							<label>Alignment<select class="property-input" id="prop-textAlign"><option value="left" ${node.config.textAlign === 'left' ? 'selected' : ''}>Left</option><option value="center" ${node.config.textAlign !== 'left' && node.config.textAlign !== 'right' ? 'selected' : ''}>Center</option><option value="right" ${node.config.textAlign === 'right' ? 'selected' : ''}>Right</option></select></label>
 							<label>Copies<input type="number" class="property-input" id="prop-copies" value="${node.config.copies ?? 1}" min="1" max="99" step="1"></label>
 						</div>
+						<div class="property-help">To bold just the buyer, choose Selected text and enter <code>**{username}**</code> above <code>{itemName}</code>. Item fields must come from your event or an earlier node.</div>
 					</div>
 					<div class="property-group">
 						<label class="property-label">Printer override (optional)</label>

@@ -3670,14 +3670,16 @@ async function ensureChatClientInstance() {
 		let pluralmindResult = null;
 		const pluralmindEligibleEvent = !normalizedEventTypeLower || ['message', 'chat', 'action', 'bits'].includes(normalizedEventTypeLower);
 		if (settings.pluralmind && pluralmindEligibleEvent && message && !normalizedPayload?.contentimg && globalThis.SSNPluralmindIntegration) {
-			pluralmindResult = await globalThis.SSNPluralmindIntegration.resolveMessage({
+			// Render native emotes against the original offsets before stripping proxy text.
+			pluralmindResult = await globalThis.SSNPluralmindIntegration.resolveRenderedMessage({
 				userId: normalizedPayload?.userId || parsedMessage.tags?.['user-id'],
 				username: user,
-				message: message
+				message: replaceEmotesWithImages(message, parsedMessage.tags?.emotes, !!parsedMessage.tags?.bits),
+				textOnly: !!settings.textonlymode
 			});
 			if (pluralmindResult) {
 				resolvedDisplayName = pluralmindResult.name;
-				message = pluralmindResult.cleanedMessage;
+				message = pluralmindResult.body;
 			}
 		}
 
@@ -3745,6 +3747,7 @@ async function ensureChatClientInstance() {
 		
 		// Check if this is a bit message
 		const isBitMessage = !!(parsedMessage.tags && parsedMessage.tags.bits);
+		const renderedMessage = pluralmindResult ? pluralmindResult.cleanedMessage : replaceEmotesWithImages(message, twitchEmotes, isBitMessage);
 		
 		// Debug logging for bit messages
 		if (isBitMessage) {
@@ -3759,12 +3762,12 @@ async function ensureChatClientInstance() {
 			data.initial = replyMessage;
 			data.reply = originalMessage;
 			if (settings.textonlymode) {
-				data.chatmessage = replyMessage + ": " + replaceEmotesWithImages(message, twitchEmotes, isBitMessage);
+				data.chatmessage = replyMessage + ": " + renderedMessage;
 			} else {
-				data.chatmessage = "<i><small>" + escapeHtml(replyMessage) + ":&nbsp;</small></i> " + replaceEmotesWithImages(message, twitchEmotes, isBitMessage);
+				data.chatmessage = "<i><small>" + escapeHtml(replyMessage) + ":&nbsp;</small></i> " + renderedMessage;
 			}
 		} else {
-			data.chatmessage = replaceEmotesWithImages(message, twitchEmotes, isBitMessage);
+			data.chatmessage = renderedMessage;
 		}
 		if (data.contentimg) {
 			data.chatmessage = "";

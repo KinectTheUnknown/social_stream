@@ -227,10 +227,10 @@ async function main() {
     }));
 
     assert.deepStrictEqual(textOnlyResults, {
-      tags: "hello world",
-      namedEmote: "erallieLuv",
-      emojiImage: "gift 💎",
-      lessThan: "2",
+      tags: "hello <b>world</b>",
+      namedEmote: '<img alt="erallieLuv" src="emote.png">',
+      emojiImage: 'gift <img alt="💎" src="diamond.png">',
+      lessThan: "2 < 3",
       whitespace: "one two",
       nullValue: "",
       numericValue: "42"

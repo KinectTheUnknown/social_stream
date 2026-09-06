@@ -3841,6 +3841,7 @@ function setupPageLinks(hideLinks, baseURL, streamID, password) {
     { id: "chatoverlaytemplate", path: getSelectedChatOverlayTemplatePath() },
     { id: "overlay", path: "featured.html" },
     { id: "multialerts", path: "multi-alerts.html" },
+    { id: "stickeroverlay", path: "stickers.html" },
     { id: "emoteswall", path: "emotes.html" },
     { id: "hypemeter", path: "hype.html" },
     { id: "hypetrain", path: "meta.html", defaultParams: "&hype" },
@@ -4575,6 +4576,7 @@ function update(response, sync = true) {
 
         if (response.streamID) {
             lastResponse = response;
+            if (window.updateStickerRewardSettings) window.updateStickerRewardSettings(response.settings);
             streamID = true;
 
             var password = "";
@@ -10983,10 +10985,10 @@ async function testThermalPrinterAlignment() {
 	if (button) button.disabled = true;
 	setThermalPrinterStatus('Sending alignment test...', false);
 	try {
-		const html = '<div style="border:1px solid #000;padding:2mm">' +
+		const html = '<div style="border:1px solid #000;padding:1mm;font-size:8pt;line-height:1.2">' +
 			'<div style="display:flex;justify-content:space-between;font-size:8pt"><b>| LEFT</b><b>RIGHT |</b></div>' +
-			'<div style="font-size:16pt;font-weight:bold;text-align:center;margin:2mm 0">PRINT ALIGNMENT</div>' +
-			'<div style="text-align:center">Both vertical edges and all text should be visible.</div></div>';
+			'<div style="font-size:10pt;font-weight:bold;text-align:center;margin:1mm 0">SAFE WIDTH TEST</div>' +
+			'<div style="text-align:center">Both side borders should be visible.</div></div>';
 		const result = await window.ninjafy.printThermal(html, getThermalPrinterOptionsFromPopup());
 		setThermalPrinterStatus(result?.success ? 'Alignment test sent.' : (result?.error || 'Print failed.'), !result?.success);
 	} catch (error) {

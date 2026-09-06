@@ -161,7 +161,7 @@ const root = path.resolve(__dirname, "..");
 	const domSource = fs.readFileSync(path.join(root, "sources/twitch.js"), "utf8");
 	const websocketSource = fs.readFileSync(path.join(root, "sources/websocket/twitch.js"), "utf8");
 	assert(domSource.includes("settings.pluralmind") && domSource.includes("resolveRenderedMessage"), "DOM Twitch capture must call the isolated adapter only behind the setting");
-	assert(websocketSource.includes("settings.pluralmind") && websocketSource.includes("resolveMessage"), "WebSocket Twitch capture must call the isolated adapter only behind the setting");
+	assert(websocketSource.includes("settings.pluralmind") && websocketSource.includes("resolveRenderedMessage"), "WebSocket Twitch capture must preserve emotes through the isolated adapter only behind the setting");
 
 	const dock = fs.readFileSync(path.join(root, "dock.html"), "utf8");
 	assert(dock.includes('data.delete.meta.pluralmind && data.delete.userid'), "Only PluralMind deletes should opt into stable Twitch user IDs");

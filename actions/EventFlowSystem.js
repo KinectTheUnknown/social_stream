@@ -3212,6 +3212,18 @@ class EventFlowSystem {
 			.replace(/'/g, '&#39;');
 	}
 
+	renderThermalPrintText(template, message, weight) {
+		const render = text => this.escapeThermalPrintText(this.replaceTemplateVars(text, message));
+		if (weight !== 'selected') return render(template);
+		// Parse only the host's template. Buyer/item text cannot introduce formatting or HTML.
+		return template.split(/(\*\*[\s\S]+?\*\*)/g).map(part => {
+			if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
+				return `<strong>${render(part.slice(2, -2))}</strong>`;
+			}
+			return render(part);
+		}).join('');
+	}
+
 	resolveThermalPrinter() {
 		if (typeof this.printThermal === 'function') return this.printThermal;
 		try {
@@ -3951,13 +3963,13 @@ class EventFlowSystem {
 						error: 'Thermal printing requires the Social Stream standalone app.'
 					};
 				} else {
-					const renderedText = this.replaceTemplateVars(config.text || '{username}', message || {});
+					const renderedText = this.renderThermalPrintText(config.text || '{username}', message || {}, config.fontWeight);
 					const fontSize = Math.max(6, Math.min(96, Number(config.fontSize) || 18));
 					const lineHeight = Math.max(0.8, Math.min(3, Number(config.lineHeight) || 1.15));
-					const fontWeight = config.fontWeight === 'normal' ? 'normal' : 'bold';
+					const fontWeight = ['normal', 'selected'].includes(config.fontWeight) ? 'normal' : 'bold';
 					const textAlign = ['left', 'center', 'right'].includes(config.textAlign) ? config.textAlign : 'center';
 					const fontFamily = String(config.fontFamily || 'monospace').replace(/[^\w\s,'"-]/g, '') || 'monospace';
-					const html = `<div style="white-space:pre-wrap;font-family:${fontFamily};font-size:${fontSize}pt;font-weight:${fontWeight};line-height:${lineHeight};text-align:${textAlign}">${this.escapeThermalPrintText(renderedText)}</div>`;
+					const html = `<div style="white-space:pre-wrap;font-family:${fontFamily};font-size:${fontSize}pt;font-weight:${fontWeight};line-height:${lineHeight};text-align:${textAlign}">${renderedText}</div>`;
 					const printOptions = {
 						copies: Math.max(1, Math.min(99, Math.floor(Number(config.copies) || 1)))
 					};
@@ -3973,11 +3985,16 @@ class EventFlowSystem {
 						};
 					}
 				}
-				result.message = {
-					...(message || {}),
-					thermalPrintResult: printResult
-				};
-				result.modified = true;
+				if (message?.meta != null && (typeof message.meta !== 'object' || Array.isArray(message.meta))) {
+					// Counter events use numeric meta; printing must not reshape those events.
+					result.thermalPrintResult = printResult;
+				} else {
+					result.message = {
+						...(message || {}),
+						meta: { ...(message?.meta || {}), thermalPrintResult: printResult }
+					};
+					result.modified = true;
+				}
 				break;
 			}
 				

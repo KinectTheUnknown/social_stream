@@ -30,7 +30,10 @@ async function loadScriptsInOrder() {
         './db.js?v=2',
         './ai.js?v=2',
         './points.js?v=1',
-        './pointsactions.js?v=1'
+        './pointsactions.js?v=1',
+        './shared/stickers/catalog.js',
+        './shared/stickers/rewards.js',
+        './shared/stickers/background.js'
 
     ];
 

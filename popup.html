@@ -7635,7 +7635,7 @@ input:checked + .slider:before {
 										<label>Driver margins<br><select class="textInput" data-optionsetting="printerMarginMode"><option value="printableArea" selected>Use printable area</option><option value="none">Use full paper</option></select></label>
 									</div>
 									<div style="margin-top:10px;"><button type="button" id="testThermalPrinter">Print alignment test</button> <span id="thermalPrinterStatus" role="status"></span></div>
-									<p>SSApp uses the printer driver's printable area, then applies these safe margins. Fixed label length is in millimetres; leave it at 0 for content-sized receipt paper. If either edge of the alignment box is missing, increase that side's margin. <a href="./docs/thermal-printer-guide.html" target="_blank">Open the thermal printer guide</a>.</p>
+									<p>The test's side borders mark the safe width, not the paper edges; its height follows the test text. If a side is missing, increase that margin. For 3 × 1-inch stock: 76.2 mm width, 25.4 mm fixed length when the 1-inch side feeds through. Match Windows too. <a href="./docs/thermal-printer-guide.html" target="_blank">Printer setup guide</a>.</p>
 								</div>
                                 <div title="Some sites may wish to access your stream ID for custom third party integrations">
                                     <label class="switch">
@@ -7963,6 +7963,37 @@ input:checked + .slider:before {
                                 <div style="margin-top: 10px;">
                                     <button id="viewPointsLeaderboard" class="button" data-translate="view-points-leaderboard">View Leaderboard</button>
                                 </div>
+
+                                <details id="sticker-rewards-settings" style="margin-top:15px;border:1px solid var(--color-border);border-radius:8px;padding:12px;">
+                                    <summary style="cursor:pointer;font-weight:bold;">Sticker rewards · let viewers spend points</summary>
+                                    <p>Turn loyalty points into on-screen stickers. Off until you enable it and choose a pack. Viewers use <code>!stickers</code> and <code>!sticker launch</code>.</p>
+                                    <label><input type="checkbox" name="sticker-enabled"> Enable sticker rewards</label>
+                                    <div id="sticker-pack-options"></div>
+                                    <p><a href="./docs/sticker-gallery.html" target="_blank" rel="noopener">Browse packs &amp; previews</a> · <a href="./docs/inspiration.html" target="_blank" rel="noopener">Get stream ideas</a></p>
+                                    <p>Add this link as an OBS Browser Source (keep it active):</p>
+                                    <div id="stickeroverlay"></div>
+                                    <p>Or add <code>&amp;stickers</code> to your Multi-Alerts or Event Stream link. Use one of these display options to avoid showing the same sticker twice.</p>
+                                    <div style="display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));margin:12px 0;">
+                                        <label>Show for (seconds) <input type="number" name="sticker-duration" min="2" max="15" value="6" style="width:65px"></label>
+                                        <label>Per-viewer cooldown (seconds) <input type="number" name="sticker-userCooldown" min="5" max="3600" value="60" style="width:65px"></label>
+                                        <label>Per-sticker cooldown (seconds) <input type="number" name="sticker-stickerCooldown" min="5" max="3600" value="20" style="width:65px"></label>
+                                        <label>Quiet gap (seconds) <input type="number" name="sticker-gap" min="1" max="60" value="3" style="width:65px"></label>
+                                    </div>
+                                    <label><input type="checkbox" name="sticker-replies" checked> Reply to sticker commands in the originating chat, when that source supports replies</label>
+                                    <details id="sticker-custom-form" style="margin-top:12px;">
+                                        <summary>My images &amp; GIPHY GIFs</summary>
+                                        <p>Add media you have permission to use. For GIPHY, paste a direct media link ending in .gif or .webp, not the GIPHY page. Only your approved URLs are available to viewers.</p>
+                                        <div style="display:grid;gap:8px;">
+                                            <label>Name <input type="text" id="sticker-custom-name" maxlength="60"></label>
+                                            <label>Short chat code <input type="text" id="sticker-custom-code" maxlength="32" pattern="[a-z0-9-]+"></label>
+                                            <label>Direct HTTPS image / GIF URL <input type="url" id="sticker-custom-url" maxlength="2048" style="width:95%"></label>
+                                            <label>Points <input type="number" id="sticker-custom-cost" min="1" max="1000000" value="100"></label>
+                                            <button type="button" id="sticker-custom-add" class="button">Add custom sticker</button>
+                                        </div>
+                                        <div id="sticker-custom-list"></div>
+                                    </details>
+                                    <p id="sticker-settings-status" role="status">Requires loyalty points and a connected sticker overlay. One sticker at a time; no backlog.</p>
+                                </details>
 
                                 <h4 style="margin-top: 15px;">Backup & Restore</h4>
                                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
@@ -15674,6 +15705,8 @@ input:checked + .slider:before {
 		<script type="text/javascript" src="./shared/ai/kokoroAssetCatalog.js"></script>
 		<!-- Kitten TTS will be loaded dynamically as ES module when needed -->
         <script type="text/javascript" src="popup.js?v=3"></script>
+        <script src="shared/stickers/catalog.js"></script>
+        <script src="shared/stickers/popup.js"></script>
         <script type="text/javascript" src="spotify-auth-helper.js"></script>
     </body>
 </html>

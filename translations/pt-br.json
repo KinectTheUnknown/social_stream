@@ -1336,6 +1336,7 @@
     "and-more-peer-count": "e {count} mais"
   },
   "titles": {
+    "show-content-images-and-videos-up-to-240px-including-twitch-gifs-and-stickers-does-not-resize-regular-emotes": "Mostrar imagens e vídeos de conteúdo de até 240 px, incluindo GIFs e figurinhas da Twitch (não redimensiona emotes comuns)",
     "show-username-colors-supplied-by-the-source-sources-such-as-youtube-may-not-supply-one": "Show username colors supplied by the source. Sources such as YouTube may not supply one.",
     "keep-source-provided-username-colors-and-generate-a-consistent-color-when-one-is-missing": "Keep source-provided username colors and generate a consistent color when one is missing.",
     "generate-a-consistent-username-color-in-this-dock-replacing-colors-supplied-by-the-source": "Generate a consistent username color in this Dock, replacing colors supplied by the source.",
@@ -1829,6 +1830,12 @@
     "how-fast-the-credits-roll-upward-in-pixels-per-second-default-80": "A rapidez com que os créditos sobem, em pixels por segundo (padrão 80)"
   },
   "placeholders": {
+    "count-ranked-viewers": "{count} espectadores classificados",
+    "eg-activity": "ex.: Atividade",
+    "streak": "sequência",
+    "points": "pontos",
+    "waiting-for-points": "Aguardando pontos",
+    "enable-points-system-then-wait-for-chat-activity-or-manage-points-from-the-popup": "Ative o sistema de pontos e aguarde atividade no chat ou gerencie os pontos pelo popup.",
     "auto-for-example-super-chats": "Auto (for example, Super Chats)",
     "intro-main-brb": "Intro, Principal, Intervalo",
     "0": "0",
