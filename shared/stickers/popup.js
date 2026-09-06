@@ -13,7 +13,9 @@
         panel.querySelectorAll('[data-sticker-price]').forEach(function (input) { config.prices[input.dataset.stickerPrice] = Number(input.value); });
         ['duration', 'userCooldown', 'stickerCooldown', 'gap'].forEach(function (key) { config[key] = Number(panel.querySelector('[name="sticker-' + key + '"]').value); });
         config = SSNStickers.config(config);
-        render();
+        // Keep the focused control alive while normalizing the saved values.
+        panel.querySelectorAll('[data-sticker-price]').forEach(function (input) { input.value = config.prices[input.dataset.stickerPrice]; });
+        ['duration', 'userCooldown', 'stickerCooldown', 'gap'].forEach(function (key) { panel.querySelector('[name="sticker-' + key + '"]').value = config[key]; });
         chrome.runtime.sendMessage({ cmd: 'saveSetting', setting: 'stickerRewards', type: 'json', value: JSON.stringify(config) }, function () {
             status.textContent = chrome.runtime.lastError ? 'Could not save sticker settings.' : 'Saved. Loyalty points and an open sticker overlay are required.';
         });
@@ -42,7 +44,9 @@
     // Reuse the popup's normal asynchronous hydration, including Electron startup retries.
     window.updateStickerRewardSettings = function (settings) {
         if (!settings) return;
-        config = SSNStickers.config(settings.stickerRewards); render(); ready = true;
+        var incoming = SSNStickers.config(settings.stickerRewards);
+        if (ready && JSON.stringify(incoming) === JSON.stringify(config)) return;
+        config = incoming; render(); ready = true;
     };
     if (typeof lastResponse !== 'undefined' && lastResponse && lastResponse.settings) window.updateStickerRewardSettings(lastResponse.settings);
     panel.addEventListener('change', function (event) { if (!event.target.closest('#sticker-custom-form')) save(); });

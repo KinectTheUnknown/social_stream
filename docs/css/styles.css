@@ -1455,7 +1455,8 @@ header .container {
     header .theme-toggle { margin-left: 0; flex-shrink: 0; }
     header .github-link { margin-right: 0; }
     .mobile-nav-toggle { flex-shrink: 0; }
-    header nav { height: calc(100vh - 8rem); overflow-y: auto; }
+    header nav { height: calc(100vh - 8rem); overflow-y: auto; visibility: hidden; }
+    header nav.active { visibility: visible; }
 }
 @media (max-width: 480px) {
     header .logo a { font-size: 1.7rem; }

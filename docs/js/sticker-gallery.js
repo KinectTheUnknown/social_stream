@@ -3,6 +3,12 @@
     var dialog = document.getElementById('sticker-preview');
     var frame = document.getElementById('preview-frame');
     var current;
+    var copyTimer;
+    function showCopyStatus(text, copied) {
+        clearTimeout(copyTimer);
+        document.getElementById('copy-status').textContent = (copied ? 'Copied: ' : 'Copy this command: ') + text;
+        if (copied) copyTimer = setTimeout(function () { document.getElementById('copy-status').textContent = ''; }, 4000);
+    }
     document.querySelectorAll('[data-variation]').forEach(function (select) {
         select.addEventListener('change', function () {
             var card = select.closest('[data-pack]');
@@ -28,15 +34,15 @@
     document.getElementById('preview-replay').addEventListener('click', function () { frame.src = current; });
     document.querySelectorAll('[data-copy]').forEach(function (button) {
         button.addEventListener('click', function () {
-            var text = button.dataset.copy, status = document.getElementById('copy-status');
+            var text = button.dataset.copy;
             function fallback() {
                 var input = document.createElement('textarea'); input.value = text;
                 input.style.cssText = 'position:fixed;left:-9999px'; document.body.appendChild(input); input.select();
                 var copied = false; try { copied = document.execCommand('copy'); } catch (_) {}
-                input.remove(); button.focus(); status.textContent = copied ? 'Copied: ' + text : 'Copy this command: ' + text;
+                input.remove(); button.focus(); showCopyStatus(text, copied);
             }
             if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(text).then(function () { status.textContent = 'Copied: ' + text; }, fallback);
+                navigator.clipboard.writeText(text).then(function () { showCopyStatus(text, true); }, fallback);
             } else fallback();
         });
     });
