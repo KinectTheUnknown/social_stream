@@ -163,3 +163,43 @@ test('Only the matching receipt from a sticker peer confirms delivery; timeout f
     const missing = options.send({ meta: { sticker: { redemptionId: 'receipt-2' } } });
     timeout(); assert.equal(await missing, false);
 });
+
+test('A rendered sticker acknowledges its sender through the viewing connection', async () => {
+    const { chromium } = require('playwright');
+    const browser = await chromium.launch({ headless: true });
+    try {
+        const page = await browser.newPage();
+        await page.addInitScript(() => {
+            window.receipts = [];
+            window.addEventListener('message', event => {
+                if (event.data && event.data.fixtureReceipt) window.receipts.push(event.data.fixtureReceipt);
+            });
+        });
+        const payload = { event: 'sticker', chatname: 'Viewer', meta: { sticker: {
+            id: 'rocket', name: 'Rocket', redemptionId: 'rendered-receipt',
+            expiresAt: Date.now() + 30000, duration: 2
+        } } };
+        await page.route('https://vdo.socialstream.ninja/**', route => route.fulfill({
+            contentType: 'text/html',
+            // A viewing connection replies over rpcs; pcs addresses viewers
+            // of the overlay itself, where the original sender is not present.
+            body: `<script>
+                addEventListener('message', function (event) {
+                    var command = event.data;
+                    if (command.type === 'rpcs' && command.UUID === 'publisher') {
+                        parent.postMessage({ fixtureReceipt: command.sendData.overlayNinja }, '*');
+                    }
+                });
+                parent.postMessage({ UUID: 'publisher', dataReceived: { overlayNinja: ${JSON.stringify(payload)} } }, '*');
+            </script>`
+        }));
+        await page.goto(require('node:url').pathToFileURL(path.join(root, 'stickers.html')).href + '?session=fixture');
+        await page.locator('.ssn-sticker.is-visible').waitFor({ timeout: 10000 });
+        await page.waitForFunction(() => window.receipts.length === 1, null, { timeout: 3000 });
+        assert.deepEqual(await page.evaluate(() => window.receipts[0]), {
+            action: 'stickerReceipt', meta: { sticker: { redemptionId: 'rendered-receipt', success: true } }
+        });
+    } finally {
+        await browser.close();
+    }
+});

@@ -14,7 +14,7 @@
     function receipt(item, uuid, success) {
         if (!bridge || !uuid) return;
         bridge.contentWindow.postMessage({ sendData: { overlayNinja: { action: 'stickerReceipt',
-            meta: { sticker: { redemptionId: item.redemptionId, success: success } } } }, type: 'pcs', UUID: uuid }, '*');
+            meta: { sticker: { redemptionId: item.redemptionId, success: success } } } }, type: 'rpcs', UUID: uuid }, '*');
     }
     function show(payload, uuid) {
         if (!payload || payload.event !== 'sticker' || !payload.meta || !payload.meta.sticker) return;
