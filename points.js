@@ -269,7 +269,7 @@ class PointsSystem {
     }
 
     async addPoints(username, type = 'default', amount) {
-        if (amount <= 0) return { success: false, message: "Amount must be positive" };
+        if (!Number.isFinite(amount) || amount <= 0) return { success: false, message: "Amount must be a positive number" };
 
         const userKey = this.getUserKey(username, type);
 
@@ -292,7 +292,7 @@ class PointsSystem {
     }
     
     async spendPoints(username, type = 'default', amount) {
-        if (amount <= 0) return { success: false, message: "Amount must be positive" };
+        if (!Number.isFinite(amount) || amount <= 0) return { success: false, message: "Amount must be a positive number" };
 
         const userKey = this.getUserKey(username, type);
 
