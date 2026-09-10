@@ -1249,6 +1249,16 @@
                                 <td>A live payment-success websocket notification arrives.</td>
                                 <td><code>meta.paymentStatus: "succeeded"</code>, with the buyer, item, order ID and other allowed fields supplied by that notification. This remains a distinct payment event; it does not emit another <code>purchase</code> or donation. Missing fields stay empty or omitted, even if an earlier sale supplied them.</td>
                             </tr>
+                            <tr>
+                                <td><code>auction</code></td>
+                                <td>When a live auction milestone changes (bids placed, auctions started or ended, and products sold).</td>
+                                <td>Renders as an alert. Contains user-driven actions under <code>meta</code> (such as <code>meta.action</code>, <code>meta.successful</code>, <code>meta.reason</code>, <code>meta.price</code>, <code>meta.currency</code>, <code>meta.priceText</code>, and <code>meta.title</code>).</td>
+                            </tr>
+                            <tr>
+                                <td><code>commerce</code></td>
+                                <td>When storefront inventory updates (products pinned, unpinned, created, or deleted).</td>
+                                <td>Renders as an alert. Contains action details and raw product payloads under <code>meta</code> (such as <code>meta.action</code>, <code>meta.productId</code>, <code>meta.price</code>, <code>meta.currency</code>, <code>meta.priceText</code>, <code>meta.title</code>, and <code>meta.product</code>).</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>

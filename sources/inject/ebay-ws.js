@@ -1,34 +1,122 @@
-(function () {
-	// Extension MAIN-world observer. SSApp uses its buffered WebSocket monitor.
-	if (window.__ssnEbaySocketObserver || (window.ninjafy && window.ninjafy.onWebSocketMessage)) return;
-	window.__ssnEbaySocketObserver = true;
-	var NativeWebSocket = window.WebSocket;
-	var pending = [];
-	var ready = false;
-	function deliver(data) {
-		if (!ready) {
-			pending.push(data);
-			if (pending.length > 250) pending.shift();
-			return;
-		}
-		window.postMessage({ source: "ebay-ws-observer", data: data }, location.origin);
-	}
-	window.addEventListener("message", function (event) {
-		if (event.source !== window || event.origin !== location.origin || !event.data || event.data.source !== "ebay-ws-ready") return;
-		ready = true;
-		pending.splice(0).forEach(deliver);
-	});
-	window.postMessage({ source: "ebay-ws-available" }, location.origin);
-	window.WebSocket = new Proxy(NativeWebSocket, {
-		construct: function (target, args) {
-			var socket = Reflect.construct(target, args);
-			try {
-				if (new URL(socket.url).hostname !== "fanout.ebay.com") return socket;
-				socket.addEventListener("message", function (event) {
-					if (typeof event.data === "string") deliver(event.data);
-				});
-			} catch (e) {}
-			return socket;
-		}
-	});
+function runWS() {
+  /**
+   * @typedef {{ type: typeof WSEventType.RECEIVE | typeof WSEventType.SEND, data: string }} WSEventPayload
+   */
+
+  const WSEventType = /** @type {const} */ ({
+    /** When a message is received from the eBay Live WS */
+    RECEIVE: "receive",
+    /** When a message is sent through the eBay Live WS */
+    SEND: "send"
+  });
+
+  /**
+   * Ensures that the given data is a string.
+   * @param {*} data 
+   * @returns {string}
+   */
+  function normalizeToString(data) {
+    if (typeof data === "string") return data;
+    try {
+      if (data instanceof ArrayBuffer || ArrayBuffer.isView(data)) {
+        return new TextDecoder().decode(data);
+      }
+      return typeof data === "object" ? JSON.stringify(data) : String(data);
+    } catch (e) {
+      return String(data);
+    }
+  }
+
+  const OriginalWS = window.WebSocket;
+  /**
+   * Prevent site scripts from overwriting and intercepting window.postMessage
+   * @type {typeof window.postMessage}
+   */
+  const _postMessage = window.postMessage.bind(window);
+  /**
+   * 
+   * @param {WSEventPayload} data 
+   * @returns 
+   */
+  const postMessage = (data) => _postMessage({
+    ...data,
+    source: "ebay-ws-interceptor"
+  }, window.location.origin);
+  let exited = false;
+  /**
+   * Safely executes a callback, handling extension context invalidation. Will not execute if already exited.
+   * @param {() => any} cb The callback to attempt to execute
+   * @param {() => any} onExit Executed when the extension context is invalidated
+   */
+  async function safely(cb, onExit) {
+    if (exited) return;
+    try {
+      return await cb();
+    } catch (e) {
+      if (e instanceof Error && e.message === "Extension context invalidated.") {
+        return onExit();
+      }
+
+      throw e;
+    }
+  }
+
+  window.WebSocket = function (/** @type {string | URL} */ url, /** @type {string | string[] | undefined} */ protocols) {
+    const ws = new OriginalWS(url, protocols);
+
+    let tUrl = typeof url === "string" ? url : url.href;
+    if (tUrl.startsWith("wss://fanout.ebay.com/") || tUrl.includes("fanout.ebay.com") || tUrl.includes("livecommerce/auction")) {
+      safely(() => postMessage({
+        type: "open",
+        url: tUrl
+      }), cleanUp);
+      /**
+       * @type {typeof WebSocket.prototype.send}
+       * @this {WebSocket}
+       */
+      function wsSend(data) {
+        OriginalWS.prototype.send.call(this, data);
+        const normalized = normalizeToString(data);
+        safely(() => postMessage({
+          type: WSEventType.SEND,
+          data: normalized
+        }), cleanUp);
+      };
+
+      /**
+       * @param {MessageEvent} event 
+       */
+      function onMessage(event) {
+        const normalized = normalizeToString(event.data);
+        safely(() => postMessage({
+          type: WSEventType.RECEIVE,
+          data: normalized
+        }), cleanUp);
+      }
+      ws.send = wsSend;
+      ws.addEventListener("message", onMessage);
+
+      function cleanUp() {
+        if (exited) return;
+        ws.send = OriginalWS.prototype.send.bind(ws);
+        ws.removeEventListener("message", onMessage);
+        window.WebSocket = OriginalWS;
+        exited = true;
+        console.log("Cleaned up eBay Live WebSocket interception");
+      }
+    }
+
+    return ws;
+  };
+  const descriptors = Object.getOwnPropertyDescriptors(OriginalWS);
+  for (const key in descriptors) {
+    Object.defineProperty(window.WebSocket, key, descriptors[key]);
+  }
+
+  console.log("eBay Live WebSocket interception script loaded");
+}
+
+(() => {
+  if (typeof usingElectron !== "undefined" && usingElectron) return;
+  runWS();
 })();
