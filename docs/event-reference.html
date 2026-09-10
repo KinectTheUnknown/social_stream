@@ -1099,6 +1099,16 @@
                                 <td>When catalog sections change (products, surprise sets, upcoming giveaways), often accelerated by websocket giveaway/product lifecycle packets.</td>
                                 <td>Metadata-only snapshot with section counts and item arrays under <code>meta.products</code>, <code>meta.surpriseSets</code>, and <code>meta.upcomingGiveaways</code>.</td>
                             </tr>
+                            <tr>
+                                <td><code>auction</code></td>
+                                <td>When a live auction milestone changes (bids placed, auctions started or ended, and products sold).</td>
+                                <td>Renders as an alert. Contains user-driven actions under <code>meta</code> (such as <code>meta.action</code>, <code>meta.successful</code>, <code>meta.reason</code>, <code>meta.price</code>, <code>meta.currency</code>, <code>meta.priceText</code>, and <code>meta.title</code>).</td>
+                            </tr>
+                            <tr>
+                                <td><code>commerce</code></td>
+                                <td>When storefront inventory updates (products pinned, unpinned, created, or deleted).</td>
+                                <td>Renders as an alert. Contains action details and raw product payloads under <code>meta</code> (such as <code>meta.action</code>, <code>meta.productId</code>, <code>meta.price</code>, <code>meta.currency</code>, <code>meta.priceText</code>, <code>meta.title</code>, and <code>meta.product</code>).</td>
+                            </tr>
                         </tbody>
                     </table>
                     <p class="field-highlights">Auction/commerce updates are still DOM-backed snapshots; websocket packets mainly provide faster triggers and cleaner event metadata. Keep downstream rendering keyed off <code>data.event</code> + <code>data.meta</code>.</p>

@@ -603,6 +603,11 @@
 			"world": "MAIN"
 		},
 		{
+			"js": ["./sources/ebay2.js"],
+			"matches": ["https://www.ebay.com/ebaylive/host/events/*"],
+			"all_frames": true
+		},
+		{
 			"js": ["./sources/owncast.js"],
 			"matches": ["https://watch.owncast.online/*", "https://live.simontv.org/embed/chat/readwrite/*"]
 		},

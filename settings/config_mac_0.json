@@ -687,5 +687,8 @@
       "url": "https://whatnot.com/login",
       "userAgent": null
     }
+  },
+  "ebay2": {
+    "websocketMonitoring": "fanout.ebay.com"
   }
 }
