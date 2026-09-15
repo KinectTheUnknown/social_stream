@@ -286,15 +286,15 @@
 			"js": ["./sources/sessions.js"],
 			"matches": ["https://app.sessions.us/*"]
 		},
+    {
+			"js": ["./sources/whatnot.js"],
+			"matches": ["https://www.whatnot.com/live/*", "https://whatnot.com/live/*", "https://www.whatnot.com/dashboard/live/*"]
+		},
 		{
 			"js": ["./sources/inject/whatnot-ws.js"],
 			"matches": ["https://www.whatnot.com/live/*", "https://www.whatnot.com/dashboard/live/*"],
 			"run_at": "document_start",
 			"world": "MAIN"
-		},
-		{
-			"js": ["./sources/whatnot.js"],
-			"matches": ["https://www.whatnot.com/live/*", "https://whatnot.com/live/*", "https://www.whatnot.com/dashboard/live/*"]
 		},
 		{
 			"js": ["./sources/younow.js"],
