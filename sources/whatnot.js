@@ -1231,9 +1231,9 @@
       priceText = formatMoneyValue({ amount: cents, currency: currency });
     }
 
-    /** @type {User | {}} */
-    var bidderUser = product.highestBid?.user ?? product.purchaserUser ?? {};
-    var meta = buildWebSocketMeta(wsChannel || "", "auction_" + action, rawPayload || {}, bidderUser);
+    /** @type {User?} */
+    var bidderUser = product.highestBid?.user ?? product.purchaserUser ?? null;
+    var meta = buildWebSocketMeta(wsChannel || "", "auction_" + action, rawPayload || {}, bidderUser ?? {});
     meta.action = action;
     meta.status = status;
     meta.statusText = statusText;
@@ -1241,6 +1241,7 @@
     meta.currency = currency;
     meta.priceText = priceText;
     meta.title = product.name || "";
+    meta.userId = bidderUser?.id;
     if (product.auctionEndTime) meta.auctionEndTime = product.auctionEndTime;
 
     if (bidder) {
@@ -1283,6 +1284,7 @@
       data.meta.priceText = overtakenPriceText;
       data.meta.title = product.name || "";
       data.meta.description = product.description;
+      data.meta.userId = payload.highestBidder.id;
       if (product.auctionEndTime) data.meta.auctionEndTime = product.auctionEndTime;
       pushMessage(data);
     }
@@ -1302,6 +1304,7 @@
       data.meta.priceText = bidPriceText;
       data.meta.title = product.name || "";
       data.meta.description = product.description;
+      data.meta.userId = payload.highestBidder.id;
       if (product.auctionEndTime) data.meta.auctionEndTime = product.auctionEndTime;
       pushMessage(data);
     }
